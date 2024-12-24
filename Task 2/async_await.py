@@ -1,7 +1,7 @@
 import asyncio
 import random
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable
 
 logging.basicConfig(level=logging.INFO)
 
