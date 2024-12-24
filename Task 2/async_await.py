@@ -1,6 +1,9 @@
 import asyncio
 import random
+import logging
 from typing import List, Optional, Tuple
+
+logging.basicConfig(level=logging.INFO)
 
 async def process_order_async(order: str, min_time: float = 1.5) -> str:
     """
@@ -35,19 +38,18 @@ async def async_map_with_await(
 
 async def demo_with_async_await():
     orders = ["Кава", "Чай", "Піца", "Суші"]
-    print("Початок обробки замовлень за допомогою async/await...")
+    logging.info("Початок обробки замовлень за допомогою async/await...")
     errors, results = await async_map_with_await(orders, process_order_async)
 
     if errors:
-        print("\nПомилки:")
+        logging.error("\nПомилки:")
         for index, error in errors:
-            print(f"  - Замовлення {orders[index]}: {error}")
+            logging.error(f"  - Замовлення {orders[index]}: {error}")
 
-    print("\nРезультати:")
+    logging.info("\nРезультати:")
     for result in results:
         if result:
-            print(f"  - {result}")
-
+            logging.info(f"  - {result}")
 
 if __name__ == "__main__":
     asyncio.run(demo_with_async_await())
