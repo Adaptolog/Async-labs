@@ -1,6 +1,9 @@
 import asyncio
 import random
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 async def process_order(order: str, min_time: float = 1.5) -> str:
     """
@@ -44,24 +47,24 @@ async def async_map_with_abort(data: list, async_function: callable, timeout: fl
         await asyncio.gather(*tasks)
     except asyncio.CancelledError:
         # Якщо задачі було скасовано, обробляємо цей випадок
-        print("Обробка була скасована.")
+        logging.info("Обробка була скасована.")
         cancel_event.set()
 
     return errors, [result[1] for result in sorted(results)]
 
 async def demo_with_abort():
     orders = ["Кава", "Чай", "Піца", "Суші"]
-    print("Початок обробки замовлень...")
+    logging.info("Початок обробки замовлень...")
     errors, results = await async_map_with_abort(orders, process_order, timeout=2)
 
     if errors:
-        print("\nПомилки:")
+        logging.error("Помилки:")
         for index, error in errors:
-            print(f"  - Замовлення {orders[index]}: {error}")
+            logging.error(f"  - Замовлення {orders[index]}: {error}")
 
-    print("\nРезультати:")
+    logging.info("Результати:")
     for result in results:
-        print(f"  - {result}")
+        logging.info(f"  - {result}")
 
 if __name__ == "__main__":
     asyncio.run(demo_with_abort())
