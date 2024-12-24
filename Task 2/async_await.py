@@ -2,7 +2,6 @@ import asyncio
 import random
 from typing import List, Optional, Tuple
 
-
 async def process_order_async(order: str, min_time: float = 1.5) -> str:
     """
     Асинхронна функція для обробки замовлення.
@@ -33,3 +32,22 @@ async def async_map_with_await(
 
     await asyncio.gather(*(handle_item(index, item) for index, item in enumerate(data)))
     return errors, results
+
+async def demo_with_async_await():
+    orders = ["Кава", "Чай", "Піца", "Суші"]
+    print("Початок обробки замовлень за допомогою async/await...")
+    errors, results = await async_map_with_await(orders, process_order_async)
+
+    if errors:
+        print("\nПомилки:")
+        for index, error in errors:
+            print(f"  - Замовлення {orders[index]}: {error}")
+
+    print("\nРезультати:")
+    for result in results:
+        if result:
+            print(f"  - {result}")
+
+
+if __name__ == "__main__":
+    asyncio.run(demo_with_async_await())
