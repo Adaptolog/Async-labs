@@ -1,6 +1,9 @@
 import asyncio
 import random
+import logging
 from typing import AsyncIterator
+
+logging.basicConfig(level=logging.INFO)
 
 async def async_stream_large_dataset(total_size: int, batch_size: int = 10) -> AsyncIterator[list]:
     """
@@ -28,8 +31,8 @@ async def handle_large_dataset():
     processed = []
     errors = []
 
-    print("Початок обробки великих даних...")
-    print(f"Всього елементів: {total_size}, розмір порції: {batch_size}\n")
+    logging.info("Початок обробки великих даних...")
+    logging.info(f"Всього елементів: {total_size}, розмір порції: {batch_size}\n")
 
     # Асинхронний цикл для потокової обробки
     async for batch in async_stream_large_dataset(total_size, batch_size):
@@ -40,15 +43,15 @@ async def handle_large_dataset():
             errors.append(str(e))
 
     # Виведення підсумків
-    print("\nЗавершення обробки.\n")
-    print("Оброблені порції:")
+    logging.info("\nЗавершення обробки.\n")
+    logging.info("Оброблені порції:")
     for res in processed:
-        print(f"  - {res}")
+        logging.info(f"  - {res}")
 
     if errors:
-        print("\nПомилки:")
+        logging.error("\nПомилки:")
         for err in errors:
-            print(f"  - {err}")
+            logging.error(f"  - {err}")
 
 async def demo():
     """
