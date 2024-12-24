@@ -1,6 +1,9 @@
 import random
 import time
+import logging
 from typing import List, Callable, Optional, Tuple
+
+logging.basicConfig(level=logging.INFO)
 
 def process_order(order: str, min_time: float = 1.5) -> str:
     """
@@ -41,17 +44,17 @@ def async_map_with_promises(
 
 def demo_with_promises():
     orders = ["Кава", "Чай", "Піца", "Суші"]
-    print("Початок обробки замовлень за допомогою промісів...")
+    logging.info("Початок обробки замовлень за допомогою промісів...")
     errors, results = async_map_with_promises(orders, process_order)
 
     if errors:
-        print("\nПомилки:")
+        logging.error("Помилки:")
         for index, error in errors:
-            print(f"  - Замовлення {orders[index]}: {error}")
+            logging.error(f"  - Замовлення {orders[index]}: {error}")
 
-    print("\nРезультати:")
+    logging.info("Результати:")
     for result in results:
-        print(f"  - {result}")
+        logging.info(f"  - {result}")
 
 
 if __name__ == "__main__":
