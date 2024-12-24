@@ -38,3 +38,21 @@ def async_map_with_promises(
             future.add_done_callback(lambda fut, idx=index: handle_result(idx, fut))
 
     return errors, [res[1] for res in sorted(results)]
+
+def demo_with_promises():
+    orders = ["Кава", "Чай", "Піца", "Суші"]
+    print("Початок обробки замовлень за допомогою промісів...")
+    errors, results = async_map_with_promises(orders, process_order)
+
+    if errors:
+        print("\nПомилки:")
+        for index, error in errors:
+            print(f"  - Замовлення {orders[index]}: {error}")
+
+    print("\nРезультати:")
+    for result in results:
+        print(f"  - {result}")
+
+
+if __name__ == "__main__":
+    demo_with_promises()
