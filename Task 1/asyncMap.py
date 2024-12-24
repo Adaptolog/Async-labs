@@ -47,3 +47,28 @@ def async_map(
 
     for index, item in enumerate(data):
         async_function(item, lambda error, result: handle_result(index, error, result))
+
+def manage_orders() -> None:
+    """
+    Основна функція для запуску обробки замовлень.
+    """
+    orders = ["Кава", "Чай", "Піца", "Суші"]
+    logging.info("Початок обробки замовлень...")
+
+    def show_results(errors: Optional[List[Tuple[int, str]]], results: List[Optional[str]]) -> None:
+        if errors:
+            logging.error("Помилки під час обробки:")
+            for index, error in errors:
+                logging.error(f"  - Замовлення {orders[index]}: {error}")
+
+        logging.info("Результати успішної обробки:")
+        for result in results:
+            if result:
+                logging.info(f"  - {result}")
+
+        logging.info("Обробка завершена.")
+
+    async_map(orders, lambda order, cb: process_order(order, cb, min_time=1.5), show_results)
+
+if __name__ == "__main__":
+    manage_orders()
