@@ -48,3 +48,20 @@ async def async_map_with_abort(data: list, async_function: callable, timeout: fl
         cancel_event.set()
 
     return errors, [result[1] for result in sorted(results)]
+
+async def demo_with_abort():
+    orders = ["Кава", "Чай", "Піца", "Суші"]
+    print("Початок обробки замовлень...")
+    errors, results = await async_map_with_abort(orders, process_order, timeout=2)
+
+    if errors:
+        print("\nПомилки:")
+        for index, error in errors:
+            print(f"  - Замовлення {orders[index]}: {error}")
+
+    print("\nРезультати:")
+    for result in results:
+        print(f"  - {result}")
+
+if __name__ == "__main__":
+    asyncio.run(demo_with_abort())
