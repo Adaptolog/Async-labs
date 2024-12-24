@@ -49,3 +49,12 @@ async def handle_large_dataset():
         print("\nПомилки:")
         for err in errors:
             print(f"  - {err}")
+
+async def demo():
+    """
+    Демонстрація обробки великих даних.
+    """
+    await handle_large_dataset()
+
+if __name__ == "__main__":
+    asyncio.run(demo())
