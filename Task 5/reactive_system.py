@@ -31,3 +31,13 @@ async def producer(queue: asyncio.Queue, emitter: EventEmitter):
         logging.info(f"Емітер: Генерую {message}")
         emitter.emit(message)
         await queue.put(message)
+
+async def consumer(queue: asyncio.Queue, consumer_id: int):
+    """
+    Отримує події з черги.
+    """
+    while True:
+        message = await queue.get()
+        logging.info(f"Споживач {consumer_id}: Обробляю {message}")
+        await asyncio.sleep(random.uniform(0.5, 1.5))  # Імітація обробки
+        queue.task_done()
