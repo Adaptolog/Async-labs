@@ -1,61 +1,88 @@
 import asyncio
 import random
 import logging
-from typing import Callable, Optional, List, Tuple
+from typing import Callable, Optional, List
 
 logging.basicConfig(level=logging.INFO)
 
-async def async_filter_map(
+def async_filter_map(
     data: List[str],
-    async_filter_map_fn: Callable[[str], Optional[str]],
-    debounce_time: Optional[float] = None
-) -> List[str]:
+    async_filter_map_fn: Callable[[str], asyncio.Future],
+    debounce_time: Optional[float] = None,
+    callback: Callable[[List[str]], None] = None
+) -> asyncio.Future:
     """
     Асинхронний аналог комбінації `filter` і `map`.
     Виконує асинхронний колбек для кожного елемента, фільтруючи й трансформуючи дані.
     """
+    loop = asyncio.get_event_loop()
     results = []
+    pending = len(data)
+    done_future = asyncio.Future()
 
-    async def process_item(item: str) -> None:
-        result = await async_filter_map_fn(item)
-        if result is not None:
-            results.append(result)
+    def process_done(item: str, future: asyncio.Future):
+        nonlocal pending
+        try:
+            result = future.result()
+            if result is not None:
+                results.append(result)
+        except Exception as e:
+            logging.error(f"Помилка під час обробки елемента '{item}': {e}")
+        
+        pending -= 1
+        if pending == 0:
+            if callback:
+                callback(results)
+            done_future.set_result(results)
 
-        # Додаткове очікування для debounce
-        if debounce_time is not None:
-            await asyncio.sleep(debounce_time)
+    for item in data:
+        task = async_filter_map_fn(item)
+        task.add_done_callback(lambda future, item=item: process_done(item, future))
+        if debounce_time:
+            loop.call_later(debounce_time, lambda: None)
 
-    await asyncio.gather(*(process_item(item) for item in data))
-    return results
+    return done_future
 
-async def filter_map_callback(item: str) -> Optional[str]:
+def filter_map_callback(item: str) -> asyncio.Future:
     """
     Асинхронний колбек для `filterMap`.
-    Симулює асинхронну обробку і повертає результат або None для фільтрації.
+    Симулює асинхронну обробку і повертає Future з результатом або None.
     """
-    await asyncio.sleep(random.uniform(0.5, 1.5))  # Імітація роботи
-    if random.random() > 0.3:  # 70% шанс зберегти елемент
-        return f"Оброблений елемент: {item}"
-    return None  # Фільтруємо елементи
+    future = asyncio.Future()
 
-async def demo_cases():
+    def process():
+        try:
+            if random.random() > 0.3:  # 70% шанс зберегти елемент
+                future.set_result(f"Оброблений елемент: {item}")
+            else:
+                future.set_result(None)  # Фільтруємо елементи
+        except Exception as e:
+            future.set_exception(e)
+
+    delay = random.uniform(0.5, 1.5)  # Імітація роботи
+    asyncio.get_event_loop().call_later(delay, process)
+    return future
+
+def demo_cases():
     """
     Основна функція для демонстрації використання асинхронного `filterMap`.
     """
+    loop = asyncio.new_event_loop()  # Створюємо новий цикл подій
+    asyncio.set_event_loop(loop)  # Встановлюємо його як поточний цикл подій
     data = ["Кава", "Чай", "Піца", "Суші"]
-    logging.info("Початок обробки...")
+
+    def on_complete(results):
+        logging.info("Результати:")
+        for result in results:
+            logging.info(f"  - {result}")
 
     # Запуск без debounce
-    results = await async_filter_map(data, filter_map_callback)
-    logging.info("Результати без debounce:")
-    for result in results:
-        logging.info(f"  - {result}")
+    logging.info("Демо: без debounce")
+    loop.run_until_complete(async_filter_map(data, filter_map_callback, callback=on_complete))
 
-    # Запуск із debounce (додаткова затримка 0.5 секунди)
-    results_with_debounce = await async_filter_map(data, filter_map_callback, debounce_time=0.5)
-    logging.info("Результати з debounce:")
-    for result in results_with_debounce:
-        logging.info(f"  - {result}")
+    # Запуск із debounce
+    logging.info("Демо: з debounce (0.5 сек)")
+    loop.run_until_complete(async_filter_map(data, filter_map_callback, debounce_time=0.5, callback=on_complete))
 
 if __name__ == "__main__":
-    asyncio.run(demo_cases())
+    demo_cases()
